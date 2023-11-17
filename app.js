@@ -1,5 +1,5 @@
-const form = document.querySelector("form");
-const apiKey = "2b6b2c75790565a4f251171556ece413";
+const form = document.querySelector('form');
+const apiKey = 'Ù¾ÙÎùïÝ9ë¸nu×½yç§{w';
 let cities = {};
 
 function renderCityCard(city) {
@@ -33,21 +33,23 @@ function renderCityCard(city) {
 </div>
   `;
 
-  document.querySelector(".cities").insertAdjacentHTML("beforeend", html);
+  document.querySelector('.cities').insertAdjacentHTML('beforeend', html);
 }
 
 function renderError(message) {
-  document.querySelector(".error-message").textContent = message;
+  document.querySelector('.error-message').textContent = message;
 }
 
 async function getData(city) {
-  const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=imperial`;
+  const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${btoa(
+    apiKey
+  )}&units=imperial`;
 
   try {
     const res = await axios.get(url);
     console.log(res.data);
 
-    const cityAndCounty = res.data.name + ", " + res.data.sys.country;
+    const cityAndCounty = res.data.name + ', ' + res.data.sys.country;
 
     console.log(cityAndCounty);
 
@@ -64,7 +66,7 @@ async function getData(city) {
 
       console.log(cities);
 
-      localStorage.setItem("cities", JSON.stringify(cities));
+      localStorage.setItem('cities', JSON.stringify(cities));
       renderCityCard(cities[cityAndCounty]);
     } else {
       throw new Error(`${city} is already in your card list`);
@@ -75,31 +77,31 @@ async function getData(city) {
   }
 }
 
-form.addEventListener("submit", (e) => {
+form.addEventListener('submit', (e) => {
   e.preventDefault();
-  renderError("");
-  const city = form.querySelector(".header__input").value;
+  renderError('');
+  const city = form.querySelector('.header__input').value;
   form.reset();
 
   getData(city);
 });
 
-document.querySelector(".cities").addEventListener("click", (e) => {
+document.querySelector('.cities').addEventListener('click', (e) => {
   console.log(e.target);
-  if (e.target.classList.contains("close-icon")) {
-    const card = e.target.closest(".col");
+  if (e.target.classList.contains('close-icon')) {
+    const card = e.target.closest('.col');
     console.log(card);
     const city = card.dataset.name;
     console.log(city);
     delete cities[city];
     console.log(cities);
     card.remove();
-    localStorage.setItem("cities", JSON.stringify(cities));
+    localStorage.setItem('cities', JSON.stringify(cities));
   }
 });
 
-document.addEventListener("DOMContentLoaded", () => {
-  const cities = JSON.parse(localStorage.getItem("cities")) || {};
+document.addEventListener('DOMContentLoaded', () => {
+  const cities = JSON.parse(localStorage.getItem('cities')) || {};
   console.log(cities);
   Object.keys(cities).map((item) => {
     getData(item);
@@ -107,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 setInterval(() => {
-  document.querySelector(".cities").innerHTML = "";
+  document.querySelector('.cities').innerHTML = '';
   Object.values(cities).map((item) => {
     renderCityCard(item);
   });
