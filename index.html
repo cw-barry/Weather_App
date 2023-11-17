@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather App</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container-fluid d-flex flex-column" style="height: 100vh">
+      <section class="header p-3 text-light flex-grow-1">
+        <div class="container-fluid">
+          <div
+            class="text-center d-flex justify-content-center align-items-center"
+          >
+            <img
+              src="./image/logo2022.png"
+              alt="clarusway logo"
+              class="header__logo mb-4"
+            />
+            <h1 class="header__title">Weather App</h1>
+          </div>
+          <form class="d-flex">
+            <input
+              type="text"
+              class="header__input"
+              placeholder="Search for a city"
+              autofocus
+            />
+            <button type="submit" class="btn btn-primary ms-2">Search</button>
+          </form>
+          <span class="error-message"></span>
+        </div>
+      </section>
+
+      <section class="weather-info flex-grow-1 mt-5">
+        <div class="container">
+          <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4 cities">
+            <!-- city card template -->
+            <!-- <div class="col" data-name="Boston, US">
+              <div class="city">
+                <h2 class="city-name">
+                  <span>Boston</span>
+                  <span class="country-code">US</span>
+                  <i class="bi bi-x-circle-fill close-icon text-danger"></i>
+                </h2>
+                <div class="city-temp">12<sup>°C</sup></div>
+                <figure>
+                  <img
+                    src="https://openweathermap.org/img/wn/02d@2x.png"
+                    class="city-icon"
+                    alt="icon"
+                  />
+                  <figcaption>few clouds</figcaption>
+                </figure>
+                <div class="card-footer">
+                  <small class="text-body-secondary"
+                    >Last updated 3 mins ago</small
+                  >
+                </div>
+              </div>
+            </div> -->
+          </div>
+        </div>
+      </section>
+
+      <footer class="page-footer align-self-end">
+        <div class="container">
+          <small>Coded by <span class="text-danger">❤</span> FS Team</small>
+        </div>
+      </footer>
+    </div>
+
+    <!-- Bootstrap JS and Popper.js -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+      crossorigin="anonymous"
+    ></script>
+
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <script src="app.js"></script>
+  </body>
+</html>
