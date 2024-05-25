@@ -3,16 +3,16 @@ const apiKey = 'Ù¾ÙÎùïÝ9ë¸nu×½yç§{w';
 let cities = {};
 
 function renderCityCard(city) {
-  const { name, description, icon, temp, country, time } = city;
+  const { name, description, icon, temp, country, time, state, id } = city;
   const date = new Date(time * 1000);
   const now = new Date();
   const difference = Math.round((now - date) / 1000 / 60);
   const html = `
-<div class="col" data-name="${name}, ${country}">
+<div class="col" data-name="${id}">
   <div class="city">
     <h2 class="city-name">
       <span>${name}</span>
-      <span class="country-code">${country}</span>
+      <span class="country-code">${state ? state : ''} ${country}</span>
       <i class="bi bi-x-circle-fill close-icon text-danger"></i>
     </h2>
     <div class="city-temp">${temp}<sup>°F</sup></div>
@@ -40,37 +40,53 @@ function renderError(message) {
   document.querySelector('.error-message').textContent = message;
 }
 
-async function getData(city) {
-  const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${btoa(
-    apiKey
-  )}&units=imperial`;
+async function getData(city, isId = false) {
+  let url;
 
+  if (isId) {
+    url = `https://api.openweathermap.org/data/2.5/weather?id=${city}&appid=${btoa(
+      apiKey
+    )}&units=imperial`;
+  } else {
+    url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${btoa(
+      apiKey
+    )}&units=imperial`;
+  }
   try {
     const res = await axios.get(url);
     console.log(res.data);
 
-    const cityAndCounty = res.data.name + ', ' + res.data.sys.country;
+    const id = res.data.id;
 
-    console.log(cityAndCounty);
+    // const cityAndCounty = res.data.name + ', ' + res.data.sys.country;
 
-    if (!cities[cityAndCounty]) {
-      // cities[cityAndCounty] = res.data;
-      cities[cityAndCounty] = {
-        description: res.data.weather[0].description,
-        icon: res.data.weather[0].icon,
-        temp: res.data.main.temp,
-        country: res.data.sys.country,
-        name: res.data.name,
-        time: res.data.dt,
-      };
+    // console.log(cityAndCounty);
 
-      console.log(cities);
-
-      localStorage.setItem('cities', JSON.stringify(cities));
-      renderCityCard(cities[cityAndCounty]);
-    } else {
+    //! user searched a new city. isId added because to check that we are not in refresh mode
+    if (cities[id] && !isId)
       throw new Error(`${city} is already in your card list`);
+
+    cities[id] = {
+      state: cities[id]?.state,
+      description: res.data.weather[0].description,
+      icon: res.data.weather[0].icon,
+      temp: res.data.main.temp,
+      country: res.data.sys.country,
+      name: res.data.name,
+      time: res.data.dt,
+      id,
+    };
+
+    const cityParams = city.split(',');
+
+    if (cityParams.length > 2) {
+      cities[id].state = cityParams[1];
     }
+
+    console.log(cities);
+
+    localStorage.setItem('cities', JSON.stringify(cities));
+    renderCityCard(cities[id]);
   } catch (err) {
     console.log(err.message);
     renderError(err.message);
@@ -101,10 +117,10 @@ document.querySelector('.cities').addEventListener('click', (e) => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-  const cities = JSON.parse(localStorage.getItem('cities')) || {};
+  cities = JSON.parse(localStorage.getItem('cities')) || {};
   console.log(cities);
   Object.keys(cities).map((item) => {
-    getData(item);
+    getData(item, true);
   });
 });
 
