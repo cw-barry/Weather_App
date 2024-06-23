@@ -54,51 +54,65 @@ function renderError(message) {
   document.querySelector('.error-message').textContent = message;
 }
 
-//! function to get data from the API.
-async function getData(city, isId = false) {
-  //? url to get data from the API.
-  //? we can fetch data by city name or by city id.
-  //? when user searches a new city, isId is false, and this function makes a request to fetch data by city name.
-  //? when user refreshes the page, isId is true, and this function makes a request to fetch data by city id. As we store city data in localstorage with city id as key, this is how we know which data to fetch.
-  //* if isId is false, the url is for getting data by city name. By default isId is false.
-  let url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${btoa(
+//! function to get data from the API with city name.
+async function fetchWeatherWithCityName(cityName) {
+  const url = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=${btoa(
     apiKey
   )}&units=imperial`;
 
-  //* if isId is true, the url is for getting data by id.
-  if (isId) {
-    url = `https://api.openweathermap.org/data/2.5/weather?id=${city}&appid=${btoa(
-      apiKey
-    )}&units=imperial`;
-  }
+  const res = await axios.get(url);
+  console.log(res.data);
 
+  //? API is sending a lot of data. We don't need all the incoming data. We select the data that we need.
+  const data = {
+    description: res.data.weather[0].description,
+    icon: res.data.weather[0].icon,
+    temp: res.data.main.temp,
+    country: res.data.sys.country,
+    name: res.data.name,
+    time: res.data.dt,
+    id: res.data.id,
+  };
+  return data;
+}
+
+//! function to get data from the API with city id.
+async function fetchWeatherWithCityId(cityId) {
+  const url = `https://api.openweathermap.org/data/2.5/weather?id=${cityId}&appid=${btoa(
+    apiKey
+  )}&units=imperial`;
+
+  const res = await axios.get(url);
+  console.log(res.data);
+
+  //? API is sending a lot of data. We don't need all the incoming data. We select the data that we need.
+  const data = {
+    description: res.data.weather[0].description,
+    icon: res.data.weather[0].icon,
+    temp: res.data.main.temp,
+    country: res.data.sys.country,
+    name: res.data.name,
+    time: res.data.dt,
+    id: res.data.id,
+  };
+  return data;
+}
+
+//! function to handle a new city search.
+async function handleCitySearch(city) {
   try {
-    const res = await axios.get(url);
-    console.log(res.data);
-    const id = res.data.id;
+    const cityData = await fetchWeatherWithCityName(city);
+    const cityId = cityData.id;
+    if (cities[cityId]) throw new Error(`${city} is already in your card list`);
 
-    //? we need to check if the city is already in the cities object.
-    //? There is an extra case here! if isId is true, we don't want to check if the city is already in the cities object. This means that we are in refresh mode and the city is already in the cities object.
-    if (cities[id] && !isId)
-      throw new Error(`${city} is already in your card list`);
-
-    //? API is sending a lot of data. We don't need all the incoming data. We select the data that we need. And create a new entry into the cities object.
-    cities[id] = {
-      state: cities[id]?.state,
-      description: res.data.weather[0].description,
-      icon: res.data.weather[0].icon,
-      temp: res.data.main.temp,
-      country: res.data.sys.country,
-      name: res.data.name,
-      time: res.data.dt,
-      id,
-    };
+    //? Create a new entry into the cities object.
+    cities[cityId] = cityData;
 
     //? city input entered by user can contain city, state, and country separated by comma.
     const cityParams = city.split(',');
 
     //? API does not contain any state data. Just city and country.
-    //? So we need to check if the city input contains state and country. If it does, we add it to the cities object.
+    //? So we need to check if the city search input contains state and country. If it does, we add it to the cities object.
     //? Why we need this. There are some cities in the US with the same name. To specify the exact city we need to store the state data by ourselves.
     //? example: there are 2 Portland cities in the US:
     //? "Portland, OR, US" and "Portland, MA, US". OR is Oregon and MA is Maine
@@ -113,9 +127,8 @@ async function getData(city, isId = false) {
     //? save the cities object to localstorage.
     localStorage.setItem('cities', JSON.stringify(cities));
     //? render the city card.
-    renderCityCard(cities[id]);
+    renderCityCard(cities[cityId]);
   } catch (err) {
-    //? if error, render the error message.
     console.log(err.message);
     renderError(err.message);
   }
@@ -130,8 +143,7 @@ form.addEventListener('submit', (e) => {
   const city = form.querySelector('.header__input').value;
   //? reset the form
   form.reset();
-  //? get the data from the API
-  getData(city);
+  handleCitySearch(city);
 });
 
 //! event listener for the cities container. If user clicks any place inside the cities container, the event listener is triggered.
@@ -157,16 +169,27 @@ document.querySelector('.cities').addEventListener('click', (e) => {
   }
 });
 
-//! event listener for the DOMContentLoaded event. This event is triggered when the initial HTML document has been completely loaded and parsed, without waiting for stylesheets, images, and other subresources to finish loading.
-document.addEventListener('DOMContentLoaded', () => {
+//! function to initialize the app.
+async function initializeApp() {
   //? get the cities from localstorage and parse it to an object. If there are no cities, we create an empty object.
   cities = JSON.parse(localStorage.getItem('cities')) || {};
   console.log(cities);
-  //? Loop over cities object and call getData function with the city id = true, as we store cities in localstorage with city id as key.
-  //? This getData function fetches the lates weather information and create a city card..
-  Object.keys(cities).map((item) => {
-    getData(item, true);
+
+  //? Loop over cities object and call fetchWeatherWithCityId function, as we store cities in localstorage with city id as key.
+  //? Create city cards for the cities that are already in the localstorage.
+  Object.keys(cities).map(async (item) => {
+    const cityData = await fetchWeatherWithCityId(item);
+    console.log(item, cityData);
+    //? If the city data in localstorage contains a state, then we add it to the cityData object by ourselves as API does not send state data.
+    if (cities[item].state) cityData.state = cities[item].state;
+    //? Render the city card.
+    renderCityCard(cityData);
   });
+}
+
+//! event listener for the DOMContentLoaded event. This event is triggered when the initial HTML document has been completely loaded and parsed, without waiting for stylesheets, images, and other subresources to finish loading.
+document.addEventListener('DOMContentLoaded', () => {
+  initializeApp();
 });
 
 //! event listener for the setInterval function. This function is triggered every 10 seconds.
